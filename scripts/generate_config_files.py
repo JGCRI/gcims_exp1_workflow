@@ -167,7 +167,7 @@ if __name__ == "__main__":
         for model in model_list:
             for realization in realization_list:
 
-                basename = f"2021_2100_0.5_{realization}_monthly.nc"
+                basename = f"2021_2100_0.5_{realization}_monthly"
                 project_name = f"{scenario}__{model}__{realization}"
                 root_dir = "/rcfs/projects/gcims/data/xanthos/mit"
                 climate_output_dir = "/rcfs/projects/gcims/data/xanthos/mit/input/climate"
