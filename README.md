@@ -1,6 +1,9 @@
 # gcims_exp1_workflow
 GCIMS Experiment 1 Workflow
 
+## Summary
+Fill in.
+
 ## Processing environment
 
 ### Cluster
@@ -78,6 +81,12 @@ This step does the following for each scenario, model, realization:
   - drought severity, intensity, and duration
 - deletes the converted climate data 
 
+To run the simulation spreading out per scenario, model for each node and parallelizing each realization on each node, execute the following:
+```bash
+sbatch --array=0-71 simulate_future_climate.sl
+```
+This command triggers the `scripts/simulate_future_climate.py` Python file.
+
 ### Convert the Xanthos outputs to the XML structure needed for GCAM
 Convert the Xanthos output files to the XML structure needed for GCAM
 
@@ -86,3 +95,8 @@ Run GCAM
 
 ## Post-processing quality control
 Describe steps for the QC of the Xanthos and GCAM output data.
+
+## Software versions
+| Software | Version | Citation | 
+| -------- |---------| -------- |
+| Xanthos | 2.4.1  | Vernon, C.R., Li, X., Hejazi, M.I., Braun, C., Link, R. (2021). JGCRI/xanthos: v2.4.1 Xanthos (v2.4.1). Zenodo. https://doi.org/10.5281/zenodo.5177210 |
