@@ -146,6 +146,7 @@ def run_extraction(climate_file: str,
                    target_variables: dict,
                    pet_output_dir: str,
                    climate_output_dir: str,
+                   config_file_dir: str,
                    scenario: str,
                    model: str,
                    start_year: int,
@@ -168,6 +169,9 @@ def run_extraction(climate_file: str,
 
     :param climate_output_dir:                      Full path to the directory where the climate runoff output files will be stored.
     :type climate_output_dir:                       str
+
+    :param config_file_dir:                         Full path to the directory where the configuration files are stored.
+    :type config_file_dir:                          str
 
     :param scenario:                                Scenario name to process.
     :type scenario:                                 str
@@ -214,6 +218,9 @@ def run_extraction(climate_file: str,
 
     # create output file name from input file
     basename = os.path.splitext(os.path.basename(climate_file))[0]
+
+    # get realization from file name
+    realization = basename.split("_")[-2]
 
     # convert units for precipitation from mm/day to mm/month; assumes start month of January
     days_in_month_list = get_days_in_month(start_year, through_year)
@@ -265,18 +272,32 @@ def run_extraction(climate_file: str,
 
         output_file_list.append(out_file)
 
-    return output_file_list
+    # run Xanthos
+    target_config_file = os.path.join(config_file_dir, f"{scenario}__{model}__{realization}.ini")
+
+    # initialize config file
+    xth = Xanthos(target_config_file)
+
+    xth_results = xth.execute()
+
+    # delete converted climate data
+    for i in output_file_list:
+        os.remove(i)
+
+    return 0
 
 
 def run_extraction_parallel(data_directory: str,
                             xanthos_reference_file: str,
                             target_variables: dict,
-                            output_directory: str,
+                            pet_output_dir: str,
+                            climate_output_dir: str,
+                            config_file_dir: str,
                             scenario: str,
                             model: str,
-                            njobs=-1):
-    """Extract target variables at each xanthos grid cell and write to a compressed
-    numpy array for each file in parallel.
+                            njobs: int,
+                            stitch_to_historic: bool) -> list:
+    """Extract target variables into files, stitch to historic data, run Xanthos, remove converted climate files.
 
     :param data_directory:                          Directory containing the input climate data directory structure.
     :type data_directory:                           str
@@ -287,18 +308,33 @@ def run_extraction_parallel(data_directory: str,
     :param target_variables:                        Dictionary of variables to extract data for and their target units.
     :type target_variables:                         dict
 
-    :param output_directory:                        Full path to the directory where the output file will be stored.
-    :type output_directory:                         str
+    :param pet_output_dir:                          Full path to the directory where the PET output files will be stored.
+    :type pet_output_dir:                           str
+
+    :param climate_output_dir:                      Full path to the directory where the climate runoff output files will be stored.
+    :type climate_output_dir:                       str
+
+    :param config_file_dir:                         Full path to the directory where the configuration files are stored.
+    :type config_file_dir:                          str
 
     :param scenario:                                Scenario name to process.
     :type scenario:                                 str
 
     :param model:                                   Model name to process.
     :type model:                                    str
+
+    :param njobs:                                   Number of jobs to paralellize.
+    :type njobs:                                    int
+
+    :param stitch_to_historic:                      Choice to stitch historic data to the output
+    :type stitch_to_historic:                       bool
+
+    :return:                                        A list of climate data filenames that have been converted.
+
     """
 
     # get a list of target files to process in parallel
-    target_files = glob.glob(os.path.join(data_directory, scenario, model, "*_0.5_e00*_monthly.nc"))
+    target_files = glob.glob(os.path.join(data_directory, scenario, model, "*_0.5_*_monthly.nc"))
 
     print(f"Processing files:  {target_files}")
 
@@ -306,9 +342,14 @@ def run_extraction_parallel(data_directory: str,
     results = Parallel(n_jobs=njobs, backend="loky")(delayed(run_extraction)(climate_file=i,
                                                                              xanthos_reference_file=xanthos_reference_file,
                                                                              target_variables=target_variables,
-                                                                             output_directory=output_directory,
+                                                                             pet_output_dir=pet_output_dir,
+                                                                             climate_output_dir=climate_output_dir,
+                                                                             config_file_dir=config_file_dir,
                                                                              scenario=scenario,
-                                                                             model=model) for i in target_files)
+                                                                             model=model,
+                                                                             start_year=2021,  # of the future data
+                                                                             through_year=2100,
+                                                                             stitch_to_historic=stitch_to_historic) for i in target_files)
 
     return results
 
@@ -317,9 +358,6 @@ if __name__ == "__main__":
 
     # task index from SLURM array to run specific scenario, model combinations
     task_id = int(sys.argv[1])
-
-    # number of jobs per node to use for parallel processing; -1 is all
-    njobs = 4  # int(sys.argv[2])
 
     # data directory where climate data directory structure is housed
     data_dir = "/rcfs/projects/gcims/data/climate/mit"
@@ -339,6 +377,9 @@ if __name__ == "__main__":
     # xanthos climate data directory
     xanthos_climate_data_dir = "/rcfs/projects/gcims/data/xanthos/mit/input/climate"
 
+    # directory where the configuration files are stored
+    config_file_dir = "/rcfs/projects/gcims/projects/mit_climate/config_files"
+
     # dict of target variables to extract with TARGET units, not native units; some require conversion in the code
     target_variables = {"FLDS": "w-per-m2",  # surface incident longwave radiation
                         "FSDS": "w-per-m2",  # surface incident shortwave radiation
@@ -349,13 +390,13 @@ if __name__ == "__main__":
                         "WIND": "m-per-sec"}  # near surface wind speed
 
     # scenario name to process; should mirror the associated directory name
-    scenario_list = ["BASECOV", "PFCOV", "PARIS_1p5C", "PARIS_2C"]
+    scenario_list = ["BASECOV"] #, "PFCOV", "PARIS_1p5C", "PARIS_2C"]
 
     # list of model names to process
-    model_list = ["ACCESS-ESM1-5", "AWI-ESM-1-1-LR", "BCC-CSM2-MR", "CanESM5",
-                  "CMCC-ESM2", "CNRM-ESM2-1", "EC-Earth3-Veg", "FGOALS-g3", "FIO-ESM-2-0",
-                  "GISS-E2-2-G", "HadGEM3-GC31-MM", "INM-CM5-0", "IPSL-CM6A-LR", "MIROC-ES2L",
-                  "MPI-ESM1-2-HR", "MRI-ESM2-0", "SAM0-UNICON", "UKESM1-0-LL"]
+    model_list = ["ACCESS-ESM1-5", "AWI-ESM-1-1-LR"] #, "BCC-CSM2-MR", "CanESM5",
+                  # "CMCC-ESM2", "CNRM-ESM2-1", "EC-Earth3-Veg", "FGOALS-g3", "FIO-ESM-2-0",
+                  # "GISS-E2-2-G", "HadGEM3-GC31-MM", "INM-CM5-0", "IPSL-CM6A-LR", "MIROC-ES2L",
+                  # "MPI-ESM1-2-HR", "MRI-ESM2-0", "SAM0-UNICON", "UKESM1-0-LL"]
 
     # create cross product list of scenario, model
     scenario_model_list = [i for i in itertools.product(scenario_list, model_list)]
@@ -363,16 +404,14 @@ if __name__ == "__main__":
     # get the scenario, model to process based off of the task id
     scenario, model = scenario_model_list[task_id]
 
-    climate_file = "/Users/d3y010/projects/climate/mit/BASECOV/ACCESS-ESM1-5/2021_2100_0.5_e001_monthly.nc"
-
-    target_output_files = run_extraction(climate_file=climate_file,
-                                           xanthos_reference_file=xanthos_reference_file,
-                                           target_variables=target_variables,
-                                           pet_output_dir=pet_data_dir,
-                                           climate_output_dir=xanthos_climate_data_dir,
-                                           scenario=scenario,
-                                           model=model,
-                                           start_year=2021,
-                                           through_year=2100,
-                                           stitch_to_historic=True)
-
+    # run all climate file realization for the target scenario and model in parallel
+    climate_files = run_extraction_parallel(data_directory=data_dir,
+                                            xanthos_reference_file=xanthos_reference_file,
+                                            target_variables=target_variables,
+                                            pet_output_dir=pet_data_dir,
+                                            climate_output_dir=xanthos_climate_data_dir,
+                                            config_file_dir=config_file_dir,
+                                            scenario=scenario,
+                                            model=model,
+                                            njobs=10,
+                                            stitch_to_historic=True)
