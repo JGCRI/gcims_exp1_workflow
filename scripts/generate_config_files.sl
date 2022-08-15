@@ -22,12 +22,10 @@ source /share/apps/python/miniconda3.9/etc/profile.d/conda.sh
 conda activate xanthosenv
 
 start=`date +%s.%N`
-echo "Start:  $start"
 
 python /rcfs/projects/gcims/projects/mit_climate/code/gcims_exp1_workflow/scripts/generate_config_files.py
 
 end=`date +%s.$N`
-echo "End:  $end"
 
 runtime=$( echo "($end - $start) / 60" | bc -l )
 

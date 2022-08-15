@@ -1,5 +1,6 @@
 import os
 
+
 class ConfigGenerator:
     """Generate a Xanthos configuration file from inputs.
 
@@ -178,7 +179,7 @@ if __name__ == "__main__":
                 pet_rlds_filename = f"FLDS__{scenario}__{model}__{basename}.npy"
                 pet_rsds_filename = f"FSDS__{scenario}__{model}__{basename}.npy"
                 pet_wind_filename = f"WIND__{scenario}__{model}__{basename}.npy"
-                runoff_params_filename = "abcdm_parameters_gswp3_1971_1990_popsize-1500.npy"
+                runoff_params_filename = "pars_gswp3_watergap2.npy"
                 runoff_tmin_file = os.path.join(climate_output_dir, f"Tmin__{scenario}__{model}__{basename}.npy")
                 runoff_pr_file = os.path.join(climate_output_dir, f"PRECTmmd__{scenario}__{model}__{basename}.npy")
                 output_file = os.path.join(output_directory, f"{project_name}.ini")
