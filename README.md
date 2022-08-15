@@ -2,9 +2,25 @@
 GCIMS Experiment 1 Workflow
 
 ## Processing environment
+
+### Cluster
 Processing of the climate data and Xanthos simulations were conducted on a PNNL High Performance Computing (HPC) cluster named Deception (deception.pnl.gov) with an initial configuration consists of 96 compute nodes boasting a total of 6,144 CPU cores powered by dual AMD EPYC 7502 CPUs. The CPUs run at 2.5 GHz with the ability to boost to 3.35 GHz. 
 
+### Shell
 The SLURM scripts are written to execute from a BASH shell.
+
+### Python 
+We used a miniconda distribution of Python version 3.9.5.  This can be loaded on Deception via:
+```bash
+module load gcc/11.2.0
+module load python/miniconda3.9
+source /share/apps/python/miniconda3.9/etc/profile.d/conda.sh
+```
+
+We also created a virtual environment which that also includes the Xanthos install and other needed packages.  This can be activated by:
+```bash
+conda activate xanthosenv
+```
 
 ## Pre-processing
 

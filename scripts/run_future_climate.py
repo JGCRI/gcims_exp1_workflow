@@ -313,148 +313,6 @@ def run_extraction_parallel(data_directory: str,
     return results
 
 
-class ConfigGenerator:
-    """Generate a Xanthos configuration file from inputs.
-
-
-    :param template_config_file:                    Full path to the template configuration file with file name and
-                                                    extension.
-    :type template_config_file:                     str
-
-    :param project_name:                            Name of the run.
-    :type project_name:                             str
-
-    :param root_directory:                          Root directory containing the xanthos input and output directories.
-    :type root_directory:                           str
-
-    :param start_year:                              Start year of xanthos simulation.
-    :type start_year:                               int
-
-    :param end_year:                                End year of xanthos simulation.
-    :type end_year:                                 int
-
-    :param pet_tas_filename:                        File name without path of the near surface air temperature climate
-                                                    data.
-    :type pet_tas_filename:                         str
-
-    :param pet_tmin_filename:                       File name without path of the monthly mean of daily minimum near
-                                                    surface air temperature climate data.
-    :type pet_tmin_filename:                        str
-
-    :param pet_rhs_filename:                        File name without path of the near surface relative humidity climate
-                                                    data.
-    :type pet_rhs_filename:                         str
-
-    :param pet_rlds_filename:                       File name without path of the surface incident longwave radiation
-                                                    climate data.
-    :type pet_rlds_filename:                        str
-
-    :param pet_rsds_filename:                       File name without path of the surface incident shortwave radiation
-                                                    climate data.
-    :type pet_rsds_filename:                        str
-
-    :param pet_wind_filename:                       File name without path of the near surface wind speed climate data.
-    :type pet_wind_filename:                        str
-
-    :param runoff_params_filename:                  File name without path of the xanthos parameter file from
-                                                    calibration.
-    :type runoff_params_filename:                   str
-
-    :param runoff_tmin_file:                        Full path with file name and extension to the monthly mean of daily
-                                                    minimum near surface air temperature climate data.
-    :type runoff_tmin_file:                         str
-
-    :param runoff_pr_file:                          Full path with file name and extension to the monthly precipitation
-                                                    rate climate data.
-    :type runoff_pr_file:                           str
-
-    :param output_file:                             Full path with file name and extension to the output ini file.
-    :type output_file:                              str
-
-    """
-
-    PROJECT_NAME_KEY = "<PROJECT_NAME>"
-    ROOT_DIRECTORY_KEY = "<ROOT_DIR>"
-    START_YEAR_KEY = "<START_YEAR>"
-    END_YEAR_KEY = "<END_YEAR>"
-
-    PET_TAS_KEY = "<PET_TAS_KEY>"
-    PET_TMIN_KEY = "<PET_TMIN_KEY>"
-    PET_RHS_KEY = "<PET_RHS_KEY>"
-    PET_RLDS_KEY = "<PET_RLDS_KEY>"
-    PET_RSDS_KEY = "<PET_RSDS_KEY>"
-    PET_WIND_KEY = "<PET_WIND_KEY>"
-
-    RUNOFF_PARAMS_KEY = "<RUNOFF_PARAMS_KEY>"
-    RUNOFF_TMIN_KEY = "<RUNOFF_TMIN_KEY>"
-    RUNOFF_PR_KEY = "<RUNOFF_PR_KEY>"
-
-    def __init__(self,
-                 template_config_file: str,
-                 project_name: str,
-                 root_directory: str,
-                 start_year: int,
-                 end_year: int,
-                 pet_tas_filename: str,
-                 pet_tmin_filename: str,
-                 pet_rhs_filename: str,
-                 pet_rlds_filename: str,
-                 pet_rsds_filename: str,
-                 pet_wind_filename: str,
-                 runoff_params_filename: str,
-                 runoff_tmin_file: str,
-                 runoff_pr_file: str,
-                 output_file: str):
-        self.template_config_file = template_config_file
-        self.project_name = project_name
-        self.root_directory = root_directory
-        self.start_year = str(start_year)
-        self.end_year = str(end_year)
-        self.pet_tas_filename = pet_tas_filename
-        self.pet_tmin_filename = pet_tmin_filename
-        self.pet_rhs_filename = pet_rhs_filename
-        self.pet_rlds_filename = pet_rlds_filename
-        self.pet_rsds_filename = pet_rsds_filename
-        self.pet_wind_filename = pet_wind_filename
-        self.runoff_params_filename = runoff_params_filename
-        self.runoff_tmin_file = runoff_tmin_file
-        self.runoff_pr_file = runoff_pr_file
-        self.output_file = output_file
-
-    def read_template(self):
-        """Read in template ini file."""
-
-        with open(self.template_config_file) as get:
-            return get.read()
-
-    def write_template(self, template):
-        """Write template to output file."""
-
-        with open(self.output_file, "w") as out:
-            out.write(template)
-
-    def spawn(self):
-        """Modify template file with replacement values."""
-
-        template = self.read_template()
-
-        template = template.replace(ConfigGenerator.PROJECT_NAME_KEY, self.project_name)
-        template = template.replace(ConfigGenerator.ROOT_DIRECTORY_KEY, self.root_directory)
-        template = template.replace(ConfigGenerator.START_YEAR_KEY, self.start_year)
-        template = template.replace(ConfigGenerator.END_YEAR_KEY, self.end_year)
-        template = template.replace(ConfigGenerator.PET_TAS_KEY, self.pet_tas_filename)
-        template = template.replace(ConfigGenerator.PET_TMIN_KEY, self.pet_tmin_filename)
-        template = template.replace(ConfigGenerator.PET_RHS_KEY, self.pet_rhs_filename)
-        template = template.replace(ConfigGenerator.PET_RLDS_KEY, self.pet_rlds_filename)
-        template = template.replace(ConfigGenerator.PET_RSDS_KEY, self.pet_rsds_filename)
-        template = template.replace(ConfigGenerator.PET_WIND_KEY, self.pet_wind_filename)
-        template = template.replace(ConfigGenerator.RUNOFF_PARAMS_KEY, self.runoff_params_filename)
-        template = template.replace(ConfigGenerator.RUNOFF_TMIN_KEY, self.runoff_tmin_file)
-        template = template.replace(ConfigGenerator.RUNOFF_PR_KEY, self.runoff_pr_file)
-
-        self.write_template(template)
-
-
 if __name__ == "__main__":
 
     # task index from SLURM array to run specific scenario, model combinations
@@ -464,19 +322,22 @@ if __name__ == "__main__":
     njobs = 4  # int(sys.argv[2])
 
     # data directory where climate data directory structure is housed
-    data_dir = "/Users/d3y010/projects/climate/mit"  # sys.argv[3]
+    data_dir = "/rcfs/projects/gcims/data/climate/mit"
+
+    # scenario name to process; should mirror the associated directory name
+    climate_file = "/rcfs/projects/gcims/data/climate/mit/baseclim_0.5_1931_2010_allvar.nc"
 
     # directory to store the outputs in
-    output_directory = "/Users/d3y010/projects/xanthos/example/input"  # sys.argv[4]
+    output_directory = "/rcfs/projects/gcims/data/xanthos/mit/input"
 
     # xanthos reference file path with filename and extension
-    xanthos_reference_file = "/Users/d3y010/projects/xanthos/example/input/reference/xanthos_0p5deg_landcell_reference.csv"  # sys.argv[5]
+    xanthos_reference_file = "/rcfs/projects/gcims/data/xanthos/mit/input/reference/xanthos_0p5deg_landcell_reference.csv"
 
     # penman monteith file directory
-    pet_data_dir = "/Users/d3y010/projects/xanthos/example/input/pet/penman_monteith"
+    pet_data_dir = "/rcfs/projects/gcims/data/xanthos/mit/input/pet/penman_monteith"
 
     # xanthos climate data directory
-    xanthos_climate_data_dir = "/Users/d3y010/projects/xanthos/example/input/climate"
+    xanthos_climate_data_dir = "/rcfs/projects/gcims/data/xanthos/mit/input/climate"
 
     # dict of target variables to extract with TARGET units, not native units; some require conversion in the code
     target_variables = {"FLDS": "w-per-m2",  # surface incident longwave radiation
