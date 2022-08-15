@@ -1,10 +1,11 @@
 #!/bin/bash
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Simulate future climate runs through Xanthos.
+# Simulate future climate runs through Xanthos.  Processes 72 simulations for each scenario, model and 50 realizations
+#  per node in parallel.
 #
 # TO RUN:
-# sbatch /rcfs/projects/gcims/projects/mit_climate/code/gcims_exp1_workflow/scripts/simulate_future_climate.sl
+# sbatch --array=0-72 /rcfs/projects/gcims/projects/mit_climate/code/gcims_exp1_workflow/scripts/simulate_future_climate.sl
 # ----------------------------------------------------------------------------------------------------------------------
 
 #SBATCH -n 1
@@ -23,7 +24,7 @@ conda activate xanthosenv
 
 start=`date +%s.%N`
 
-python /rcfs/projects/gcims/projects/mit_climate/code/gcims_exp1_workflow/scripts/simulate_future_climate.py
+python /rcfs/projects/gcims/projects/mit_climate/code/gcims_exp1_workflow/scripts/simulate_future_climate.py $SLURM_ARRAY_TASK_ID
 
 end=`date +%s.$N`
 
