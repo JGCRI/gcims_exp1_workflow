@@ -181,7 +181,7 @@ def run_extraction(climate_file: str,
     :returns:                                       List of full path with file name and extension to the output files
 
     """
-    historic_file_structure = "{}__historic__baseclim__baseclim_0.5_1931_2010_allvar.npy"
+    historic_file_structure = "{}__historic__baseclim__baseclim_0.5_1931_2010_v2.npy"
 
     output_file_list = []
 
@@ -268,7 +268,7 @@ if __name__ == "__main__":
     data_dir = "/rcfs/projects/gcims/data/climate/mit"
 
     # scenario name to process; should mirror the associated directory name
-    climate_file = "/rcfs/projects/gcims/data/climate/mit/baseclim_0.5_1931_2010_allvar.nc"
+    climate_file = "/rcfs/projects/gcims/data/climate/mit/baseclim_0.5_1931_2010_v2.nc"
 
     # directory to store the outputs in
     output_directory = "/rcfs/projects/gcims/data/xanthos/mit/input"
