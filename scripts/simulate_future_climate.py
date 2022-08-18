@@ -150,8 +150,7 @@ def run_extraction(climate_file: str,
                    scenario: str,
                    model: str,
                    start_year: int,
-                   through_year: int,
-                   stitch_to_historic: bool) -> list:
+                   through_year: int) -> list:
     """Workhorse function to extract target variables at each xanthos grid cell and write to a compressed
     numpy array.
 
@@ -185,13 +184,9 @@ def run_extraction(climate_file: str,
     :param through_year:                            Four digit through year
     :type through_year:                             int
 
-    :param stitch_to_historic:                      Choice to stitch historic data to the output
-    :type stitch_to_historic:                       bool
-
     :returns:                                       List of full path with file name and extension to the output files
 
     """
-    historic_file_structure = "{}__historic__baseclim__baseclim_0.5_1931_2010_v2.npy"
 
     output_file_list = []
 
@@ -233,19 +228,8 @@ def run_extraction(climate_file: str,
 
         out_file = os.path.join(pet_output_dir, f"{varname}__{scenario}__{model}__{basename}.npy")
 
-        # stitch to historic if so desired
-        if stitch_to_historic:
-
-            hist_arr = np.load(os.path.join(pet_output_dir, historic_file_structure.format(varname)))
-
-            out_arr = np.concatenate([hist_arr, data[varname]], axis=1)
-
-            np.save(out_file, out_arr)
-
-        else:
-
-            # write each as a NPY file in the PET directory
-            np.save(out_file, data[varname])
+        # write each as a NPY file in the PET directory
+        np.save(out_file, data[varname])
 
         output_file_list.append(out_file)
 
@@ -256,19 +240,8 @@ def run_extraction(climate_file: str,
 
         out_file = os.path.join(climate_output_dir, f"{varname}__{scenario}__{model}__{basename}.npy")
 
-        # stitch to historic if so desired
-        if stitch_to_historic:
-
-            hist_arr = np.load(os.path.join(climate_output_dir, historic_file_structure.format(varname)))
-
-            out_arr = np.concatenate([hist_arr, data[varname]], axis=1)
-
-            np.save(out_file, out_arr)
-
-        else:
-
-            # write each as a NPY file in the PET directory
-            np.save(out_file, data[varname])
+        # write each as a NPY file in the PET directory
+        np.save(out_file, data[varname])
 
         output_file_list.append(out_file)
 
@@ -295,9 +268,8 @@ def run_extraction_parallel(data_directory: str,
                             config_file_dir: str,
                             scenario: str,
                             model: str,
-                            njobs: int,
-                            stitch_to_historic: bool) -> list:
-    """Extract target variables into files, stitch to historic data, run Xanthos, remove converted climate files.
+                            njobs: int) -> list:
+    """Extract target variables into files, run Xanthos, remove converted climate files.
 
     :param data_directory:                          Directory containing the input climate data directory structure.
     :type data_directory:                           str
@@ -326,9 +298,6 @@ def run_extraction_parallel(data_directory: str,
     :param njobs:                                   Number of jobs to paralellize.
     :type njobs:                                    int
 
-    :param stitch_to_historic:                      Choice to stitch historic data to the output
-    :type stitch_to_historic:                       bool
-
     :return:                                        A list of climate data filenames that have been converted.
 
     """
@@ -348,8 +317,7 @@ def run_extraction_parallel(data_directory: str,
                                                                              scenario=scenario,
                                                                              model=model,
                                                                              start_year=2021,  # of the future data
-                                                                             through_year=2100,
-                                                                             stitch_to_historic=stitch_to_historic) for i in target_files)
+                                                                             through_year=2100) for i in target_files)
 
     return results
 
@@ -413,5 +381,4 @@ if __name__ == "__main__":
                                             config_file_dir=config_file_dir,
                                             scenario=scenario,
                                             model=model,
-                                            njobs=10,
-                                            stitch_to_historic=True)
+                                            njobs=10)

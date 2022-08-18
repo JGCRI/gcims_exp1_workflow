@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Generate historical climate inputs for Xanthos from the MIT baseline data.
+# Generate comparison baseline climate inputs for Xanthos from the MIT baseline data.
 #
 # TO RUN:
-# sbatch /rcfs/projects/gcims/projects/mit_climate/code/gcims_exp1_workflow/scripts/generate_historical_climate.sl
+# sbatch /rcfs/projects/gcims/projects/mit_climate/code/gcims_exp1_workflow/scripts/generate_baseline_climate.sl
 # ----------------------------------------------------------------------------------------------------------------------
 
 #SBATCH -n 1
@@ -23,7 +23,7 @@ conda activate xanthosenv
 
 start=`date +%s.%N`
 
-python /rcfs/projects/gcims/projects/mit_climate/code/gcims_exp1_workflow/scripts/generate_historical_climate.py
+python /rcfs/projects/gcims/projects/mit_climate/code/gcims_exp1_workflow/scripts/generate_baseline_climate.py
 
 end=`date +%s.$N`
 

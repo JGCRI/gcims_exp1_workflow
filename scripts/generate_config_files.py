@@ -171,7 +171,7 @@ if __name__ == "__main__":
                 project_name = f"{scenario}__{model}__{realization}"
                 root_dir = "/rcfs/projects/gcims/data/xanthos/mit"
                 climate_output_dir = "/rcfs/projects/gcims/data/xanthos/mit/input/climate"
-                start_year = 1941
+                start_year = 2021
                 end_year = 2100
                 pet_tas_filename = f"Tair__{scenario}__{model}__{basename}.npy"
                 pet_tmin_filename = f"Tmin__{scenario}__{model}__{basename}.npy"

@@ -143,8 +143,7 @@ def run_extraction(climate_file: str,
                    scenario: str,
                    model: str,
                    start_year: int,
-                   through_year: int,
-                   stitch_to_historic: bool) -> list:
+                   through_year: int) -> list:
     """Workhorse function to extract target variables at each xanthos grid cell and write to a compressed
     numpy array.
 
@@ -175,13 +174,9 @@ def run_extraction(climate_file: str,
     :param through_year:                            Four digit through year
     :type through_year:                             int
 
-    :param stitch_to_historic:                      Choice to stitch historic data to the output
-    :type stitch_to_historic:                       bool
-
     :returns:                                       List of full path with file name and extension to the output files
 
     """
-    historic_file_structure = "{}__historic__baseclim__baseclim_0.5_1931_2010_v2.npy"
 
     output_file_list = []
 
@@ -220,19 +215,8 @@ def run_extraction(climate_file: str,
 
         out_file = os.path.join(pet_output_dir, f"{varname}__{scenario}__{model}__{basename}.npy")
 
-        # stitch to historic if so desired
-        if stitch_to_historic:
-
-            hist_arr = np.load(os.path.join(pet_output_dir, historic_file_structure.format(varname)))
-
-            out_arr = np.concatenate([hist_arr, data[varname]], axis=1)
-
-            np.save(out_file, out_arr)
-
-        else:
-
-            # write each as a NPY file in the PET directory
-            np.save(out_file, data[varname])
+        # write each as a NPY file in the PET directory
+        np.save(out_file, data[varname])
 
         output_file_list.append(out_file)
 
@@ -243,19 +227,8 @@ def run_extraction(climate_file: str,
 
         out_file = os.path.join(climate_output_dir, f"{varname}__{scenario}__{model}__{basename}.npy")
 
-        # stitch to historic if so desired
-        if stitch_to_historic:
-
-            hist_arr = np.load(os.path.join(climate_output_dir, historic_file_structure.format(varname)))
-
-            out_arr = np.concatenate([hist_arr, data[varname]], axis=1)
-
-            np.save(out_file, out_arr)
-
-        else:
-
-            # write each as a NPY file in the PET directory
-            np.save(out_file, data[varname])
+        # write each as a NPY file in the PET directory
+        np.save(out_file, data[varname])
 
         output_file_list.append(out_file)
 
@@ -296,8 +269,7 @@ if __name__ == "__main__":
                                   target_variables=target_variables,
                                   pet_output_dir=pet_data_dir,
                                   climate_output_dir=xanthos_climate_data_dir,
-                                  scenario="historic",
+                                  scenario="baseclim",
                                   model="baseclim",
                                   start_year=1931,
-                                  through_year=2010,
-                                  stitch_to_historic=False)
+                                  through_year=2010)
